@@ -1,0 +1,28 @@
+{
+  "name": "bdproductos-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API REST de productos con Express y PostgreSQL",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
+    "test:db": "node --test tests/postgres.integration.test.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.16.0",
+    "dotenv": "^17.2.0",
+    "cors": "^2.8.5",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^8.1.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.1.4"
+  }
+}
