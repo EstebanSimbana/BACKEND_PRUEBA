@@ -31,7 +31,7 @@ services:
       - key: DB_SSL
         value: true
       - key: CORS_ORIGINS
-        sync: false
+        value: https://estebansimbana.github.io
       - key: JSON_LIMIT
         value: 100kb
       - key: RATE_LIMIT_WINDOW_MS
