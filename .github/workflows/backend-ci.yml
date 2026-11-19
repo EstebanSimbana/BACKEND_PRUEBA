@@ -1,0 +1,77 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Pruebas y seguridad
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar dependencias reproducibles
+        working-directory: backend
+        run: npm ci
+
+      - name: Ejecutar pruebas
+        working-directory: backend
+        run: npm test
+
+      - name: Auditar dependencias
+        working-directory: backend
+        run: npm audit --audit-level=low
+
+      - name: Comprobar archivos sensibles
+        shell: bash
+        run: |
+          set -e
+          matches=$(git ls-files | grep -E '(^|/)(\.env|id_rsa|id_ed25519)(/|$)|\.(pem|pfx|p12)$' || true)
+          if [ -n "$matches" ]; then
+            echo "Archivos sensibles encontrados:"
+            echo "$matches"
+            exit 1
+          fi
+
+      - name: Validar sintaxis JavaScript
+        working-directory: backend
+        run: find . -path ./node_modules -prune -o -name '*.js' -print0 | xargs -0 -n1 node --check
+
+  analyze:
+    name: Análisis CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Ejecutar análisis CodeQL
+        uses: github/codeql-action/analyze@v3
