@@ -1,0 +1,56 @@
+databases:
+  - name: bdproductos-db
+    databaseName: bdproductos
+    plan: free
+
+services:
+  - type: web
+    name: bdproductos-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    preDeployCommand: npm run db:migrate
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: API_PREFIX
+        value: /api
+      - key: API_VERSION
+        value: v1
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bdproductos-db
+          property: connectionString
+      - key: DB_SSL
+        value: true
+      - key: CORS_ORIGINS
+        sync: false
+      - key: JSON_LIMIT
+        value: 100kb
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX
+        value: 100
+      - key: TRUST_PROXY
+        value: 1
+      - key: REQUEST_TIMEOUT_MS
+        value: 30000
+      - key: DB_POOL_MAX
+        value: 10
+      - key: DB_IDLE_TIMEOUT_MS
+        value: 30000
+      - key: DB_CONNECTION_TIMEOUT_MS
+        value: 5000
+      - key: PAGINATION_DEFAULT_LIMIT
+        value: 20
+      - key: PAGINATION_MAX_LIMIT
+        value: 100
+      - key: LOG_LEVEL
+        value: info

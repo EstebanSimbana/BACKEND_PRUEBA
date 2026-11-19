@@ -113,3 +113,25 @@ Esta entrega tiene el alcance local indicado: autenticación y autorización est
 
 Referencias utilizadas: [errores asíncronos de Express 5](https://expressjs.com/en/guide/error-handling/) y [consultas parametrizadas de node-postgres](https://node-postgres.com/features/queries).
 
+## Despliegue en Render
+
+El archivo `render.yaml` de la raíz crea:
+
+- Una base PostgreSQL administrada llamada `bdproductos-db`.
+- Un Web Service Node.js llamado `bdproductos-api`.
+- La variable `DATABASE_URL` compartida entre ambos servicios.
+- La migración automática `npm run db:migrate` antes de iniciar la aplicación.
+
+Antes de desplegar, configura manualmente `CORS_ORIGINS` en Render con los orígenes HTTPS reales del frontend. No uses `*` ni direcciones locales en producción.
+
+Para aplicar el esquema desde una terminal local o desde Render Shell:
+
+~~~powershell
+cd backend
+$env:DATABASE_URL='postgresql://usuario:contraseña@host:5432/bdproductos'
+$env:DB_SSL='true'
+npm run db:migrate
+~~~
+
+El script `database/init.sql` crea el esquema `dbo`, la tabla `dbo."Producto"` y sus índices. Es idempotente y no elimina datos existentes.
+

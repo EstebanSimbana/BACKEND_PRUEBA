@@ -22,7 +22,20 @@ const schema = z.object({
   LOG_LEVEL: z.enum(['silent', 'error', 'info'])
 }).refine(c => c.PAGINATION_DEFAULT_LIMIT <= c.PAGINATION_MAX_LIMIT, {path:['PAGINATION_DEFAULT_LIMIT']});
 function loadConfig(env = process.env) {
-  const result = schema.safeParse(env);
+  let normalizedEnv = env;
+  if (env.DATABASE_URL) {
+    const url = new URL(env.DATABASE_URL);
+    normalizedEnv = {
+      ...env,
+      DB_HOST: url.hostname,
+      DB_PORT: url.port || '5432',
+      DB_NAME: decodeURIComponent(url.pathname.replace(/^\//, '')),
+      DB_USER: decodeURIComponent(url.username),
+      DB_PASSWORD: decodeURIComponent(url.password),
+      DB_SSL: env.DB_SSL || 'true'
+    };
+  }
+  const result = schema.safeParse(normalizedEnv);
   if (!result.success) throw new Error('Configuracion invalida. Revise: ' + [...new Set(result.error.issues.map(i => i.path.join('.')))].join(', '));
   const c = result.data;
   return {...c, basePath:c.API_PREFIX + '/' + c.API_VERSION,
